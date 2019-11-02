@@ -1,6 +1,4 @@
 /*
- * ***** BEGIN GPL LICENSE BLOCK *****
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -17,48 +15,60 @@
  *
  * The Original Code is Copyright (C) 2018 Blender Foundation.
  * All rights reserved.
- *
- * Original Author: Sergey Sharybin
- * Contributor(s): None Yet
- *
- * ***** END GPL LICENSE BLOCK *****
  */
 
-/** \file blender/depsgraph/intern/builder/deg_builder_map.cc
- *  \ingroup depsgraph
+/** \file
+ * \ingroup depsgraph
  */
 
 #include "intern/builder/deg_builder_map.h"
 
-#include "BLI_utildefines.h"
-#include "BLI_ghash.h"
+#include "DNA_ID.h"
 
 namespace DEG {
 
-BuilderMap::BuilderMap() {
-	set = BLI_gset_ptr_new("deg builder gset");
+BuilderMap::BuilderMap()
+{
 }
 
-
-BuilderMap::~BuilderMap() {
-	BLI_gset_free(set, NULL);
+BuilderMap::~BuilderMap()
+{
 }
 
-bool BuilderMap::checkIsBuilt(ID *id) {
-	return BLI_gset_haskey(set, id);
+bool BuilderMap::checkIsBuilt(ID *id, int tag) const
+{
+  return (getIDTag(id) & tag) == tag;
 }
 
-void BuilderMap::tagBuild(ID *id) {
-	BLI_gset_insert(set, id);
+void BuilderMap::tagBuild(ID *id, int tag)
+{
+  IDTagMap::iterator it = id_tags_.find(id);
+  if (it == id_tags_.end()) {
+    id_tags_.insert(make_pair(id, tag));
+    return;
+  }
+  it->second |= tag;
 }
 
-bool BuilderMap::checkIsBuiltAndTag(ID *id) {
-	void **key_p;
-	if (!BLI_gset_ensure_p_ex(set, id, &key_p)) {
-		*key_p = id;
-		return false;
-	}
-	return true;
+bool BuilderMap::checkIsBuiltAndTag(ID *id, int tag)
+{
+  IDTagMap::iterator it = id_tags_.find(id);
+  if (it == id_tags_.end()) {
+    id_tags_.insert(make_pair(id, tag));
+    return false;
+  }
+  const bool result = (it->second & tag) == tag;
+  it->second |= tag;
+  return result;
+}
+
+int BuilderMap::getIDTag(ID *id) const
+{
+  IDTagMap::const_iterator it = id_tags_.find(id);
+  if (it == id_tags_.end()) {
+    return 0;
+  }
+  return it->second;
 }
 
 }  // namespace DEG

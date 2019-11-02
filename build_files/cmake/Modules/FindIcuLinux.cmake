@@ -38,14 +38,14 @@ SET(_icu_SEARCH_DIRS
 )
 
 # We don't need includes, only libs to link against...
-#FIND_PATH(ICU_INCLUDE_DIR
-#  NAMES
-#    utf.h
-#  HINTS
-#    ${_icu_SEARCH_DIRS}
-#  PATH_SUFFIXES
-#    include/unicode
-#)
+# FIND_PATH(ICU_INCLUDE_DIR
+#   NAMES
+#     utf.h
+#   HINTS
+#     ${_icu_SEARCH_DIRS}
+#   PATH_SUFFIXES
+#     include/unicode
+# )
 
 FIND_LIBRARY(ICU_LIBRARY_DATA
   NAMES
@@ -115,7 +115,7 @@ if(Boost_USE_STATIC_LIBS)
   set(CMAKE_FIND_LIBRARY_SUFFIXES ${_icu_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 endif()
 
-# handle the QUIETLY and REQUIRED arguments and set ICU_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set ICU_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Icu DEFAULT_MSG

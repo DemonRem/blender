@@ -83,7 +83,7 @@ def float_as_string(f):
 
 
 def get_py_class_from_rna(rna_type):
-    """ Get's the Python type for a class which isn't necessarily added to ``bpy.types``.
+    """ Gets the Python type for a class which isn't necessarily added to ``bpy.types``.
     """
     identifier = rna_type.identifier
     py_class = getattr(bpy.types, identifier, None)
@@ -542,7 +542,7 @@ def BuildRNAInfo():
     # Use for faster lookups
     # use rna_struct.identifier as the key for each dict
     rna_struct_dict = {}  # store identifier:rna lookups
-    rna_full_path_dict = {}	 # store the result of full_rna_struct_path(rna_struct)
+    rna_full_path_dict = {}  # store the result of full_rna_struct_path(rna_struct)
     rna_children_dict = {}  # store all rna_structs nested from here
     rna_references_dict = {}  # store a list of rna path strings that reference this type
     # rna_functions_dict = {}  # store all functions directly in this type (not inherited)
@@ -731,14 +731,14 @@ def BuildRNAInfo():
         operators = dir(op_mod)
         for op in sorted(operators):
             try:
-                rna_prop = getattr(op_mod, op).get_rna()
+                rna_prop = getattr(op_mod, op).get_rna_type()
             except AttributeError:
                 rna_prop = None
             except TypeError:
                 rna_prop = None
 
             if rna_prop:
-                GetInfoOperatorRNA(rna_prop.bl_rna)
+                GetInfoOperatorRNA(rna_prop)
 
     for rna_info in InfoOperatorRNA.global_lookup.values():
         rna_info.build()
@@ -747,21 +747,25 @@ def BuildRNAInfo():
 
     # for rna_info in InfoStructRNA.global_lookup.values():
     #     print(rna_info)
-    return InfoStructRNA.global_lookup, InfoFunctionRNA.global_lookup, InfoOperatorRNA.global_lookup, InfoPropertyRNA.global_lookup
+    return (
+        InfoStructRNA.global_lookup,
+        InfoFunctionRNA.global_lookup,
+        InfoOperatorRNA.global_lookup,
+        InfoPropertyRNA.global_lookup,
+    )
 
 
 def main():
-    import rna_info
-    struct = rna_info.BuildRNAInfo()[0]
+    struct = BuildRNAInfo()[0]
     data = []
-    for struct_id, v in sorted(struct.items()):
+    for _struct_id, v in sorted(struct.items()):
         struct_id_str = v.identifier  # "".join(sid for sid in struct_id if struct_id)
 
         for base in v.get_bases():
             struct_id_str = base.identifier + "|" + struct_id_str
 
         props = [(prop.identifier, prop) for prop in v.properties]
-        for prop_id, prop in sorted(props):
+        for _prop_id, prop in sorted(props):
             # if prop.type == "boolean":
             #     continue
             prop_type = prop.type
